@@ -4,5 +4,5 @@ import Root from './components/root.vue';
 global.$(document).ready(function () {
   new Vue({
     render: h => h(Root),
-  }).$mount('#rails-vue-template');
+  }).$mount('#walrus-ai-web-crawler');
 });

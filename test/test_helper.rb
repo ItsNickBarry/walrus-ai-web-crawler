@@ -46,9 +46,6 @@ class ActiveSupport::TestCase
 end
 
 class ActionDispatch::IntegrationTest
-  # include devise helpers for all controller and integration tests
-  include Devise::Test::IntegrationHelpers
-
   def json_response
     @json_response ||= ActiveSupport::JSON.decode response.body
   end
