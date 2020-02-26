@@ -10,6 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_25_233942) do
+ActiveRecord::Schema.define(version: 2020_02_25_235517) do
+
+  create_table "web_page_relationships", force: :cascade do |t|
+    t.integer "parent_id", null: false
+    t.integer "child_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["parent_id", "child_id"], name: "index_web_page_relationships_on_parent_id_and_child_id", unique: true
+  end
+
+  create_table "web_pages", force: :cascade do |t|
+    t.string "uri", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["uri"], name: "index_web_pages_on_uri", unique: true
+  end
 
 end
