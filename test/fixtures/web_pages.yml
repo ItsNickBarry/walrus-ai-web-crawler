@@ -18,3 +18,9 @@ artichokes:
 
 google:
   uri: google.com
+
+youtube:
+  uri: youtube.com
+
+google_plus:
+  uri: plus.google.com

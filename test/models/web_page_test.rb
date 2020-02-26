@@ -3,12 +3,8 @@ require 'test_helper'
 class WebPageTest < ActiveSupport::TestCase
   describe WebPage do
     describe '#descendents' do
-      before do
-        @web_page = web_pages(:duckduckgo)
-      end
-
       it 'returns direct children with given depth of 1' do
-        descendents = @web_page.descendents 1
+        descendents = web_pages(:duckduckgo).descendents 1
 
         assert descendents.include? web_pages(:wikipedia)
         refute descendents.include? web_pages(:wikimedia)
@@ -17,7 +13,7 @@ class WebPageTest < ActiveSupport::TestCase
       end
 
       it 'returns indirect children with given depth of 2' do
-        descendents = @web_page.descendents 2
+        descendents = web_pages(:duckduckgo).descendents 2
 
         assert descendents.include? web_pages(:wikipedia)
         assert descendents.include? web_pages(:wikimedia)
@@ -26,16 +22,34 @@ class WebPageTest < ActiveSupport::TestCase
       end
 
       it 'does not return unrelated web pages' do
-        descendents = @web_page.descendents 10
+        descendents = web_pages(:duckduckgo).descendents 10
 
         refute descendents.include? web_pages(:google)
       end
 
       it 'includes depths in results' do
-        descendents = @web_page.descendents 2
+        descendents = web_pages(:duckduckgo).descendents 10
 
         assert_equal descendents.find { |el| el == web_pages(:wikipedia) }.level, 1
         assert_equal descendents.find { |el| el == web_pages(:wikimedia) }.level, 2
+      end
+
+      it 'runs with depth of 1 by default' do
+        descendents = web_pages(:duckduckgo).descendents
+
+        assert descendents.all? { |el| el.level == 1 }
+      end
+
+      it 'does not return self when graph is cyclical' do
+        descendents = web_pages(:google).descendents 10
+
+        refute descendents.include? web_pages(:google)
+      end
+
+      it 'returns lowest level for each match when graph is cyclical' do
+        descendents = web_pages(:google).descendents 10
+
+        assert_equal descendents.find { |el| el == web_pages(:google_plus) }.level, 1
       end
     end
   end
