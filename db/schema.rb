@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_25_235517) do
+ActiveRecord::Schema.define(version: 2020_02_26_213356) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "web_page_relationships", force: :cascade do |t|
     t.integer "parent_id", null: false
@@ -24,6 +27,7 @@ ActiveRecord::Schema.define(version: 2020_02_25_235517) do
     t.string "uri", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "title", null: false
     t.index ["uri"], name: "index_web_pages_on_uri", unique: true
   end
 

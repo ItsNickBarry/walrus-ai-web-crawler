@@ -1,4 +1,5 @@
 class WebPage < ApplicationRecord
+  validates :title, presence: true
   validates :uri, presence: true, uniqueness: true
 
   has_many :parent_relationships, class_name: 'WebPageRelationship', foreign_key: :child_id, dependent: :destroy

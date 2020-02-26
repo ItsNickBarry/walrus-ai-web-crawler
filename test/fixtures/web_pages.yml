@@ -5,22 +5,29 @@
 # below each fixture, per the syntax in the comments below
 
 duckduckgo:
+  title: DuckDuckGo
   uri: duckduckgo.com
 
 wikipedia:
+  title: Wikipedia
   uri: wikipedia.org
 
 wikimedia:
+  title: Wikimedia
   uri: wikimedia.org
 
 artichokes:
+  title: Artichokes_being_cooked.jpg
   uri: https://en.wikipedia.org/wiki/File:Artichokes_being_cooked.jpg
 
 google:
+  title: Google
   uri: google.com
 
 youtube:
+  title: Youtube
   uri: youtube.com
 
 google_plus:
+  title: Google+
   uri: plus.google.com
