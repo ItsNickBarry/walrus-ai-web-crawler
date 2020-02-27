@@ -17,24 +17,27 @@ class WebPage < ApplicationRecord
   end
 
   def document
-    @document ||= Nokogiri::HTML.parse(open(self.uri))
+    @document ||= Nokogiri::HTML.parse(open(uri_object.to_s))
   end
 
-  def descendents level = 1
+  def descendents depth = 1, cache_expire = 1.second.ago
     WebPage.find_by_sql((<<-SQL).chomp)
-      WITH RECURSIVE graph (parent_id, child_id, level)
+      WITH RECURSIVE graph (parent_id, child_id, depth)
       AS (
         SELECT parent_id, child_id, 1
         FROM web_page_relationships
+        JOIN web_pages
+          ON parent_id = web_pages.id
         WHERE parent_id = #{ id }
+          AND web_pages.crawled_at > '#{ cache_expire }'
 
         UNION ALL
 
-        SELECT rel.parent_id, rel.child_id, g.level + 1
+        SELECT rel.parent_id, rel.child_id, g.depth + 1
         FROM web_page_relationships rel, graph g
-        WHERE rel.parent_id = g.child_id AND level < #{ level }
+        WHERE rel.parent_id = g.child_id AND depth < #{ depth }
       )
-      SELECT web_pages.*, MIN(level) AS level
+      SELECT web_pages.*, MIN(depth) AS depth
       FROM web_pages
       JOIN graph
         ON web_pages.id = graph.child_id
@@ -43,27 +46,25 @@ class WebPage < ApplicationRecord
     SQL
   end
 
-  def crawl level = 1, cache_expire = 1.second.ago
-    return if level < 1
+  def crawl depth = 1, cache_expire = 1.second.ago
+    return [self] if depth < 1
 
-    unless updated_at >= cache_expire
-      child_relationships.destroy_all
-    end
+    if self.crawled_at && self.crawled_at > cache_expire
+      matches = self.descendents depth, cache_expire
+      matches.map! { |child| child.depth == depth ? child : child.crawl(depth - page.depth) }
+      matches.flatten << self
+    else
+      self.child_relationships.destroy_all
 
-    document.css('a').each do |a|
-      if a.attributes['href']
+      matches = self.document.css('a').select { |a| a.attributes['href'] }.map do |a|
         child_uri = uri_object.merge(URI.parse(a.attributes['href'].value))
-        child = WebPage.find_or_initialize_by(uri: child_uri.to_s)
-
-        if child.valid?
-          unless child.persisted? && child.updated_at >= cache_expire
-            child.save!
-            child.crawl(level - 1, cache_expire)
-          end
-
-          child_relationships.find_or_create_by child: child
-        end
+        child = WebPage.find_or_create_by(uri: child_uri.to_s)
+        child_relationships.find_or_create_by child: child
+        child.crawl(depth - 1, cache_expire)
       end
+
+      self.update crawled_at: Time.now
+      matches.flatten << self
     end
   end
 

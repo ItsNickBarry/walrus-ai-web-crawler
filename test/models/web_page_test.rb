@@ -30,14 +30,14 @@ class WebPageTest < ActiveSupport::TestCase
       it 'includes depths in results' do
         descendents = web_pages(:duckduckgo).descendents 10
 
-        assert_equal descendents.find { |el| el == web_pages(:wikipedia) }.level, 1
-        assert_equal descendents.find { |el| el == web_pages(:wikimedia) }.level, 2
+        assert_equal descendents.find { |el| el == web_pages(:wikipedia) }.depth, 1
+        assert_equal descendents.find { |el| el == web_pages(:wikimedia) }.depth, 2
       end
 
       it 'runs with depth of 1 by default' do
         descendents = web_pages(:duckduckgo).descendents
 
-        assert descendents.all? { |el| el.level == 1 }
+        assert descendents.all? { |el| el.depth == 1 }
       end
 
       it 'does not return self when graph is cyclical' do
@@ -46,10 +46,10 @@ class WebPageTest < ActiveSupport::TestCase
         refute descendents.include? web_pages(:google)
       end
 
-      it 'returns lowest level for each match when graph is cyclical' do
+      it 'returns lowest depth for each match when graph is cyclical' do
         descendents = web_pages(:google).descendents 10
 
-        assert_equal descendents.find { |el| el == web_pages(:google_plus) }.level, 1
+        assert_equal descendents.find { |el| el == web_pages(:google_plus) }.depth, 1
       end
     end
   end
