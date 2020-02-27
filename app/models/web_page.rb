@@ -1,12 +1,24 @@
+require 'open-uri'
+
 class WebPage < ApplicationRecord
+  before_validation :ensure_title
+
   validates :title, presence: true
-  validates :uri, presence: true, uniqueness: true
+  validates :uri, presence: true, uniqueness: true, format: URI::regexp(%w[http https])
 
   has_many :parent_relationships, class_name: 'WebPageRelationship', foreign_key: :child_id, dependent: :destroy
   has_many :child_relationships, class_name: 'WebPageRelationship', foreign_key: :parent_id, dependent: :destroy
 
   has_many :parents, through: :parent_relationships
   has_many :children, through: :child_relationships
+
+  def uri_object
+    URI.parse(self.uri)
+  end
+
+  def document
+    @document ||= Nokogiri::HTML.parse(open(self.uri))
+  end
 
   def descendents level = 1
     WebPage.find_by_sql((<<-SQL).chomp)
@@ -30,4 +42,36 @@ class WebPage < ApplicationRecord
       GROUP BY id;
     SQL
   end
+
+  def crawl level = 1, cache_expire = 1.second.ago
+    return if level < 1
+
+    unless updated_at >= cache_expire
+      child_relationships.destroy_all
+    end
+
+    document.css('a').each do |a|
+      if a.attributes['href']
+        child_uri = uri_object.merge(URI.parse(a.attributes['href'].value))
+        child = WebPage.find_or_initialize_by(uri: child_uri.to_s)
+
+        if child.valid?
+          unless child.persisted? && child.updated_at >= cache_expire
+            child.save!
+            child.crawl(level - 1, cache_expire)
+          end
+
+          child_relationships.find_or_create_by child: child
+        end
+      end
+    end
+  end
+
+  private
+
+    def ensure_title
+      self.title ||= document.title
+    rescue
+      self.title = nil
+    end
 end
