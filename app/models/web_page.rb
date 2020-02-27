@@ -58,13 +58,17 @@ class WebPage < ApplicationRecord
 
       matches = self.document.css('a').select { |a| a.attributes['href'] }.map do |a|
         child_uri = uri_object.merge(URI.parse(a.attributes['href'].value))
-        child = WebPage.find_or_create_by(uri: child_uri.to_s)
-        child_relationships.find_or_create_by child: child
-        child.crawl(depth - 1, cache_expire)
+        child = WebPage.find_or_initialize_by(uri: child_uri.to_s)
+
+        if child.save
+          child_relationships.find_or_create_by child: child
+          child.crawl(depth - 1, cache_expire)
+        end
       end
 
       self.update crawled_at: Time.now
-      matches.flatten << self
+      # this would be better achieved with filter_map in Ruby 2.7
+      matches.flatten.compact << self
     end
   end
 
