@@ -7,27 +7,34 @@
 duckduckgo:
   title: DuckDuckGo
   uri: duckduckgo.com
+  crawled_at: <%= Time.now %>
 
 wikipedia:
   title: Wikipedia
   uri: wikipedia.org
+  crawled_at: <%= Time.now %>
 
 wikimedia:
   title: Wikimedia
   uri: wikimedia.org
+  crawled_at: <%= Time.now %>
 
 artichokes:
   title: Artichokes_being_cooked.jpg
   uri: https://en.wikipedia.org/wiki/File:Artichokes_being_cooked.jpg
+  crawled_at: <%= Time.now %>
 
 google:
   title: Google
   uri: google.com
+  crawled_at: <%= Time.now %>
 
 youtube:
   title: Youtube
   uri: youtube.com
+  crawled_at: <%= Time.now %>
 
 google_plus:
   title: Google+
   uri: plus.google.com
+  crawled_at: <%= Time.now %>
