@@ -12,6 +12,12 @@ class WebPage < ApplicationRecord
   has_many :parents, through: :parent_relationships
   has_many :children, through: :child_relationships
 
+  def uri= uri_string
+    u = URI.parse(uri_string)
+    u.fragment = nil
+    super(u.to_s)
+  end
+
   def uri_object
     URI.parse(self.uri)
   end
