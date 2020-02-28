@@ -13,7 +13,7 @@ bundle exec bundle install
 yarn install
 ```
 
-To setup the database:
+To setup the database, ensure that an instance of PostgreSQL is running locally, and run:
 
 ```bash
 bundle exec rake db:setup
