@@ -53,7 +53,9 @@
       </form>
 
       <div class="results">
-        <DefaultLoader v-show="loading" :size="475" />
+        <div class="container has-text-centered">
+          <DefaultLoader v-show="loading" :size="475" />
+        </div>
 
         <div v-show="!loading">
           <div v-for="el in collection" :key="el.id">
