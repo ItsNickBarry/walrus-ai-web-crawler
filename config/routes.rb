@@ -4,5 +4,6 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     resources :web_pages, only: [:index]
+    resources :uniform_resource_identifiers, only: [:index]
   end
 end

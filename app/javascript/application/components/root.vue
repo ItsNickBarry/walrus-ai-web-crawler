@@ -19,9 +19,19 @@
       >
         {{ e }}
       </b-message>
+
       <form id="form" action="javascript:void(0)" @submit="search">
         <b-field label="URI">
-          <b-input name="web_page[uri]" />
+          <b-autocomplete
+            v-model="uri"
+            name="web_page[uri]"
+            :data="suggestions"
+            @select="option => select = option"
+          >
+            <template slot="empty">
+              No matches
+            </template>
+          </b-autocomplete>
         </b-field>
 
         <b-field grouped>
@@ -102,12 +112,19 @@ export default {
       hits: 0,
       page: 1,
       errors: [],
+      uri: '',
+      suggestions: [],
+      suggestionNonce: 0,
     };
   },
 
   watch: {
     page: function () {
       this.search();
+    },
+
+    uri: function () {
+      this.suggest();
     },
   },
 
@@ -132,6 +149,23 @@ export default {
         error: function (res) {
           this.loading = false;
           this.errors = res.responseJSON;
+        }.bind(this),
+      });
+    },
+
+    suggest: function () {
+      let suggestionNonce = ++this.suggestionNonce;
+
+      let data = { uri: global.$('#form').serializeJSON().web_page.uri };
+
+      global.$.ajax({
+        type: 'GET',
+        url: '/api/uniform_resource_identifiers',
+        data,
+        success: function (res) {
+          if (this.suggestionNonce == suggestionNonce) {
+            this.suggestions = res.results;
+          }
         }.bind(this),
       });
     },
