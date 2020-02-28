@@ -20,7 +20,7 @@ class WebPage < ApplicationRecord
     @document ||= Nokogiri::HTML.parse(open(uri_object.to_s))
   end
 
-  def descendents depth = 1, cache_expire = 1.second.ago
+  def descendents depth = 1, cache_expire = 1.second.ago, limit = WebPage.count, offset = 0
     WebPage.find_by_sql((<<-SQL).chomp)
       WITH RECURSIVE graph (parent_id, child_id, depth)
       AS (
@@ -42,7 +42,9 @@ class WebPage < ApplicationRecord
       JOIN graph
         ON web_pages.id = graph.child_id
       WHERE id != #{ id }
-      GROUP BY id;
+      GROUP BY id
+      LIMIT #{ limit }
+      OFFSET #{ offset };
     SQL
   end
 

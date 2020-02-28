@@ -1,3 +1,2 @@
-json.array! @web_pages do |web_page|
-  json.extract! web_page, :id, :title, :uri
-end
+json.hits @hits
+json.results @web_pages, :id, :title, :uri

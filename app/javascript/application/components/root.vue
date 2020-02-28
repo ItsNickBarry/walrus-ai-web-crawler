@@ -10,33 +10,80 @@
       </div>
     </header>
 
-    <form action="javascript:void(0)" @submit="search">
-      <b-field label="URI">
-        <b-input name="web_page[uri]" />
-      </b-field>
-
-      <b-field grouped>
-        <b-field label="Search Depth" expanded>
-          <b-numberinput name="depth" min="1" />
+    <div class="container">
+      <b-message
+        v-for="e in errors"
+        :key="e"
+        title="Error"
+        class="is-warning"
+      >
+        {{ e }}
+      </b-message>
+      <form id="form" action="javascript:void(0)" @submit="search">
+        <b-field label="URI">
+          <b-input name="web_page[uri]" />
         </b-field>
 
-        <b-field label="Cache Expiry (seconds ago)" expanded>
-          <b-numberinput name="cache" min="1" />
-        </b-field>
+        <b-field grouped>
+          <b-field label="Search Depth" expanded>
+            <b-numberinput name="depth" min="1" />
+          </b-field>
 
-        <!-- eslint-disable-next-line no-irregular-whitespace -->
-        <b-field label=" ">
-          <b-button native-type="submit" :disabled="loading">
-            Search
-          </b-button>
-        </b-field>
-      </b-field>
-    </form>
+          <b-field label="Cache Expiry (seconds ago)" expanded>
+            <b-numberinput name="cache" min="1" />
+          </b-field>
 
-    <div class="results">
-      <DefaultLoader v-show="loading" :size="512" />
-      <div v-for="el in collection" :key="el.id">
-        <a :href="el.uri">{{ el.title }}</a>
+          <!-- eslint-disable-next-line no-irregular-whitespace -->
+          <b-field label=" ">
+            <b-button native-type="submit" :disabled="loading">
+              Search
+            </b-button>
+          </b-field>
+        </b-field>
+      </form>
+
+      <div class="results">
+        <DefaultLoader v-show="loading" :size="475" />
+
+        <div v-show="!loading">
+          <div v-for="el in collection" :key="el.id">
+            <a :href="el.uri">{{ el.title }}</a>
+          </div>
+        </div>
+
+        <b-pagination
+          v-show="collection.length"
+          :total="hits"
+          :current.sync="page"
+          :per-page="20"
+        >
+          <b-pagination-button
+            :id="`page${props.page.number}`"
+            slot-scope="props"
+            :page="props.page"
+            :disabled="loading"
+          >
+            {{ props.page.number }}
+          </b-pagination-button>
+
+          <b-pagination-button
+            slot="previous"
+            slot-scope="props"
+            :page="props.page"
+            :disabled="loading"
+          >
+            Previous
+          </b-pagination-button>
+
+          <b-pagination-button
+            slot="next"
+            slot-scope="props"
+            :page="props.page"
+            :disabled="loading"
+          >
+            Next
+          </b-pagination-button>
+        </b-pagination>
       </div>
     </div>
   </div>
@@ -52,14 +99,25 @@ export default {
     return {
       loading: false,
       collection: [],
+      hits: 0,
+      page: 1,
+      errors: [],
     };
+  },
+
+  watch: {
+    page: function () {
+      this.search();
+    },
   },
 
   methods: {
     search: function () {
       this.loading = true;
+      this.errors = [];
 
-      let data = global.$(event.target).closest('form').serializeJSON();
+      let data = global.$('#form').serializeJSON();
+      data.page = this.page - 1;
 
       global.$.ajax({
         type: 'GET',
@@ -67,12 +125,13 @@ export default {
         data,
         success: function (res) {
           this.loading = false;
-          this.collection = res;
+          this.collection = res.results;
+          this.hits = res.hits;
+          global.hhhhh = this.hits;
         }.bind(this),
         error: function (res) {
-          alert(res);
           this.loading = false;
-          this.collection = res;
+          this.errors = res.responseJSON;
         }.bind(this),
       });
     },
@@ -81,8 +140,4 @@ export default {
 </script>
 
 <style scoped>
-p {
-  font-size: 2em;
-  text-align: center;
-}
 </style>
